@@ -1,0 +1,7 @@
+server:
+  port: 8088  # Specifies the port on which the server will listen
+
+# Spring configuration to specify the active profile
+spring:
+  profiles:
+    active: native  # Sets the active profile to 'native'. This profile is typically used for local configuration (without an external config server).

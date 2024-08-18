@@ -1,0 +1,39 @@
+# Starts the Service Registry (Eureka Server) at port 8761
+server:
+  port: 8761  # The port on which the Eureka Service Registry will run
+
+# Configuration for the application name
+spring:
+  application:
+    name: service-registry  # The name of the application, which in this case is the service registry
+
+# Eureka configuration for the service registry application
+# This is a service registry application, so it does not need to register itself within Eureka.
+# Therefore, the 'register-with-eureka' and 'fetch-registry' flags are set to false.
+eureka:
+  instance:
+    hostname: localhost  # The hostname for the Eureka instance
+  client:
+    register-with-eureka: false  # Prevents this service registry from registering itself within Eureka
+    fetch-registry: false  # Disables fetching of the service registry data from Eureka, as this is the registry itself
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/  # The URL used to access the Eureka server (itself)
+
+# Hystrix configuration for setting a fallback mechanism
+# If any of the services in the microservice architecture does not respond within 4 seconds,
+# the API Gateway will trigger fallback logic defined for that service.
+hystrix:
+  command:
+    fallbackcmd:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 4000  # Specifies the timeout duration for service calls in milliseconds (4000 ms = 4 seconds)
+
+# This configuration exposes the Hystrix metrics stream endpoint over HTTP.
+# The endpoint provides a real-time stream of Hystrix metrics, which can be accessed for monitoring and management.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream  # Exposes the 'hystrix.stream' endpoint for monitoring Hystrix metrics

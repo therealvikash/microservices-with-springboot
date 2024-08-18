@@ -1,0 +1,46 @@
+server:
+  port: 8060  # Specifies the port on which the server will listen
+
+# Configuration to register the service in the service registry (Eureka)
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/  # URL of the Eureka server where this service will register
+
+# Log tracing configuration for Zipkin
+management:
+  tracing:
+    sampling:
+      probability: 1.0  # Sets the probability of tracing requests (1.0 means 100% of requests will be traced)
+
+spring:
+  # Specifies the application name
+  application:
+    name: api-gateway  # Name of the application
+
+  # Configuration for importing settings from a config server
+  config:
+    import: "optional:configserver:http://localhost:8088"  # URL of the config server to import additional configurations
+
+  cloud:
+    gateway:
+      routes:
+        - id: employee-service  # Unique identifier for the route
+          uri: lb://employee-service  # Load-balanced URI for the employee service
+          predicates:
+            - Path=/employee/**  # Route predicate to match requests starting with /employee/
+          filters:
+            - name: CircuitBreaker  # Applies CircuitBreaker filter to the route
+              args:
+                name: employee-service  # Name of the CircuitBreaker
+                fallbackuri: forward:/employeeServiceFallBack  # URI to forward to in case of a fallback
+
+        - id: department-service  # Unique identifier for the route
+          uri: lb://department-service  # Load-balanced URI for the department service
+          predicates:
+            - Path=/department/**  # Route predicate to match requests starting with /department/
+          filters:
+            - name: CircuitBreaker  # Applies CircuitBreaker filter to the route
+              args:
+                name: department-service  # Name of the CircuitBreaker
+                fallbackuri: forward:/departmentServiceFallBack  # URI to forward to in case of a fallback
